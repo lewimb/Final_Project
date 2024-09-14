@@ -1,6 +1,19 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Inter, Nanum_Myeongjo } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["100", "400", "500", "900"],
+});
+
+const nanum = Nanum_Myeongjo({
+  subsets: ["latin"],
+  weight: ["400", "700", "800"],
+  variable: "--font-nanum-myeongjo",
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${nanum.variable} ${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>

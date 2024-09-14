@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+root {
+  background-color: white;
+}
+
+body {
+  font-family: var(--font-inter), sans-serif; /* Fallback to sans-serif if Inter is not available */
+}
+
+h1.tagline {
+  font-family: var(--font-nanum-myeongjo), sans-serif;
+  font-size: 22px;
+}
+
+.container {
+  max-width: 300px;
+  margin: 0 auto;
+  margin-top: 20vh;
+}
+
+.tag {
+  text-align: center;
+  font-weight: 500;
+  font-size: large;
+}
+
+.card {
+  border: 1px solid #bacdd8;
+  padding: 8px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: #81a4c2; /* Change border color on hover */
+  background-color: #f0f4f7; /* Change background color on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+}
