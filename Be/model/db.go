@@ -12,8 +12,8 @@ import (
 func ConnectToDB() (*gorm.DB, error) {
 	var (
 		host     = os.Getenv("DB_HOST")
-		user     = os.Getenv("DB_user")
-		password = os.Getenv("DB_password")
+		user     = os.Getenv("DB_USER")
+		password = os.Getenv("DB_PASSWORD")
 		dbname   = os.Getenv("DB_DBNAME")
 		port     = os.Getenv("DB_PORT")
 	)

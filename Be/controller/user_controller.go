@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github/lewimb/fp_backend/model"
 	"github/lewimb/fp_backend/repository"
 	"github/lewimb/fp_backend/utils/common"
@@ -22,6 +23,21 @@ type UserController interface {
 type userController struct {
 	repo        *repository.UserRepo
 	profileRepo *repository.UserProfileRepo
+	jwtService  common.JwtToken
+}
+
+func (uc *userController) setCookie(c *gin.Context, key string, val any) {
+	value := fmt.Sprintf("%v", val)
+
+	c.SetCookie(
+		key,
+		value,
+		60*60*10000,
+		"/",
+		"",
+		false,
+		true,
+	)
 }
 
 func (uc *userController) Login(c *gin.Context) {
@@ -43,12 +59,35 @@ func (uc *userController) Login(c *gin.Context) {
 		return
 	}
 
-	err = common.ComparePasswrodHash(login.Password, user.Password)
+	err = common.ComparePasswordHash(user.Password, login.Password)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	userProfile := model.UserProfile{
+		UserID: user.ID,
+	}
+
+	accessToken, err := uc.jwtService.GenerateToken(*user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	uc.setCookie(
+		c,
+		"access_token",
+		accessToken,
+	)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successful Registered",
+		"data": gin.H{
+			"profile": userProfile,
+		},
+	})
 
 }
 
@@ -93,10 +132,21 @@ func (uc *userController) Register(c *gin.Context) {
 
 	uc.profileRepo.Create(&userProfile)
 
+	accessToken, err := uc.jwtService.GenerateToken(newUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	uc.setCookie(
+		c,
+		"access_token",
+		accessToken,
+	)
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Successful Registered",
 		"data": gin.H{
-			"user":    newUser,
 			"profile": userProfile,
 		},
 	})
@@ -114,9 +164,10 @@ func (us *userController) DeleteUser(c *gin.Context) {
 
 }
 
-func NewUserController(ur *repository.UserRepo, pr *repository.UserProfileRepo) *userController {
+func NewUserController(ur *repository.UserRepo, pr *repository.UserProfileRepo, jwtService common.JwtToken) *userController {
 	return &userController{
 		repo:        ur,
 		profileRepo: pr,
+		jwtService:  jwtService,
 	}
 }
