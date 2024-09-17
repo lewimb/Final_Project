@@ -1,5 +1,6 @@
 import Image from "next/image";
-import fashion_logo from "../public/assets/fashion_logo.svg";
+import Button from "@/components/button";
+import fashion_logo from "/public/assets/fashion_logo.svg";
 
 export default function Register() {
   return (
@@ -30,15 +31,11 @@ export default function Register() {
                 className="border-b-2 border-gray-500 w-[300px] focus:outline-none"
               />
             </label>
-            <button className="bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 border-b-4 border-black rounded">
-              Submit
-            </button>
+            <Button value={"Submit"} />
           </form>
           <div className="border-l-[1px] flex-col border-l-black pl-14">
             <h1 className="tagline">Already have an account</h1>
-            <button className="bg-white my-5 hover:bg-black text-black hover:text-white font-bold py-2 px-4 border-b-4 border-black rounded w-full">
-              Login
-            </button>
+            <Button value={"Make an account"} />
           </div>
         </div>
       </div>
