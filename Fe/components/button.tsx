@@ -1,19 +1,15 @@
-import Link from "next/link";
+import { HTMLAttributes } from "react";
 
-type Props = {
-  value: string;
-  addOns?: string;
-};
+export interface ButtonProps extends HTMLAttributes<HTMLButtonElement> {}
 
-const Button = ({ value, addOns }: Props) => {
+const Button = ({ children, className, ...props }: ButtonProps) => {
   return (
-    <>
-      <button
-        className={`${addOns} bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 border-b-4 border-black rounded-lg`}
-      >
-        {value}
-      </button>
-    </>
+    <button
+      className={`${className} bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 border-b-4 border-black rounded-lg`}
+      {...props}
+    >
+      {children}
+    </button>
   );
 };
 

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -31,14 +32,23 @@ func main() {
 	}
 
 	jwtService := common.NewJwtToken(common.TokenConfig{
-	IssuerName:      os.Getenv("TOKEN_ISSUE_NAME"),
+		IssuerName:      os.Getenv("TOKEN_ISSUE_NAME"),
 		JwtSignatureKey: []byte(os.Getenv("TOKEN_KEY")),
 		JwtLifeTime:     time.Duration(tokenLifeTime) * time.Hour,
-  })
+	})
 
 	ur := repository.NewUserRepository(db)
 	pr := repository.NewUserProfileRepository(db)
 	uc := controller.NewUserController(ur, pr, jwtService)
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{os.Getenv("FE_BASE_URL")},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	registerRoutes(r, uc)
 
