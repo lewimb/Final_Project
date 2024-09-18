@@ -66,9 +66,7 @@ export default function SearchBar({ params }: PageProps) {
             className="object-cover rounded-l-lg"
           />
           <div className="flex flex-col w-full p-2 gap-2">
-            <div className="bg-red-500 font-semibold text-2xl p-2">
-              {product.name}
-            </div>
+            <div className="font-semibold text-2xl p-2">{product.name}</div>
             <div className="">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum
               nihil voluptatibus, eveniet delectus quis sunt illo minima
@@ -96,7 +94,7 @@ export default function SearchBar({ params }: PageProps) {
                   </button>
                 ))}
               </div>
-              <Button value="Add to cart" addOns="border-2" />
+              <Button />
             </div>
           </div>
         </div>

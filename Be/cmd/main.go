@@ -39,6 +39,9 @@ func main() {
 
 	ur := repository.NewUserRepository(db)
 	pr := repository.NewUserProfileRepository(db)
+	ir := repository.NewItemRepository(db)
+
+	ic := controller.NewItemController(ir)
 	uc := controller.NewUserController(ur, pr, jwtService)
 
 	r.Use(cors.New(cors.Config{
@@ -50,7 +53,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	registerRoutes(r, uc)
+	registerRoutes(r, uc, ic)
 
 	r.Run(":8080")
 }

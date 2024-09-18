@@ -10,7 +10,7 @@ type ItemRepo struct {
 	db *gorm.DB
 }
 
-func (repo *ItemRepo) GetByItemID(id int) (*model.Item, error) {
+func (repo *ItemRepo) GetById(id int) (*model.Item, error) {
 	var item model.Item
 
 	err := repo.db.Where("id = ?", id).First(&item).Error
@@ -23,7 +23,7 @@ func (repo *ItemRepo) GetByItemID(id int) (*model.Item, error) {
 
 }
 
-func (repo *ItemRepo) GetItemList() ([]model.Item, error) {
+func (repo *ItemRepo) Get() ([]model.Item, error) {
 	var items []model.Item
 
 	err := repo.db.Find(&items).Error
@@ -34,4 +34,8 @@ func (repo *ItemRepo) GetItemList() ([]model.Item, error) {
 
 	return items, nil
 
+}
+
+func NewItemRepository(db *gorm.DB) *ItemRepo {
+	return &ItemRepo{db: db}
 }

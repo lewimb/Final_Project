@@ -1,15 +1,15 @@
 package controller
 
 import (
-	"github/lewimb/fp_backend/model"
 	"github/lewimb/fp_backend/repository"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type ItemController interface {
-	GetItemList(*gin.Context)
+	GetItems(*gin.Context)
 	GetItemByID(*gin.Context)
 }
 
@@ -17,30 +17,41 @@ type itemController struct {
 	repo *repository.ItemRepo
 }
 
-func (ic *itemController) GetItemList(c *gin.Context) {
+func (ic *itemController) GetItems(c *gin.Context) {
 
-	items, err := ic.repo.GetItemList()
+	items, err := ic.repo.Get()
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"ListOfItems": items})
+	c.JSON(http.StatusOK, gin.H{"message": "Succesfully retrieved items",
+		"data": gin.H{
+			"item": items,
+		}})
 
 }
 
-func (ic *itemController) GetByItemID(c *gin.Context) {
-	var item model.Item
+func (ic *itemController) GetItemByID(c *gin.Context) {
+	paramId := c.Param("id")
+	id, err := strconv.Atoi(paramId)
 
-	itemById, err := ic.repo.GetByItemID(int(item.ID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
+	}
+
+	item, err := ic.repo.GetById(id)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"itemByID": itemById})
+	c.JSON(http.StatusOK, gin.H{"message": "Succesfully retrieved item by id",
+		"data": gin.H{
+			"item": item,
+		}})
 }
 
 func NewItemController(ir *repository.ItemRepo) *itemController {
