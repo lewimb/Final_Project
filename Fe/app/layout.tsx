@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import { Inter, Nanum_Myeongjo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CookiesProvider } from "next-client-cookies/server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,9 +42,7 @@ export default function RootLayout({
       <body
         className={`${nanum.variable} ${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CookiesProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </CookiesProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

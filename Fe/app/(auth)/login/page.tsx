@@ -1,13 +1,16 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState, useContext } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/button";
+import { AuthContext } from "@/contexts/AuthContext";
+import type { AuthPayload } from "@/contexts/AuthContext";
 
 export default function Login() {
+  const { login } = useContext(AuthContext);
   const [error, setError] = useState("");
-  const [input, setInput] = useState({
+  const [input, setInput] = useState<AuthPayload>({
     username: "",
     password: "",
   });
@@ -15,35 +18,16 @@ export default function Login() {
 
   function validateInput() {
     if (!input.password || !input.username) {
-      setError("All fields are required");
-      return true;
+      throw new Error("All fields are required");
     }
-
-    return false;
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (validateInput()) return;
-
     try {
-      const res = await fetch("http://localhost:8080/users/login", {
-        method: "POST",
-        body: JSON.stringify(input),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.log(data);
-        setError("Login error. Please try again");
-        return;
-      }
-
+      validateInput();
+      await login(input);
       router.push("/");
     } catch (error) {
       if (error instanceof Error) {
@@ -71,7 +55,7 @@ export default function Login() {
             width={100}
             height={100}
           />
-          <h1 className="tagline">Access to your account</h1>
+          <h1 className="tagline">Login to access to your account</h1>
           {error ? <p className="text-red-500">{error}</p> : null}
           <label className="flex flex-col" htmlFor="username">
             <span>
@@ -101,7 +85,9 @@ export default function Login() {
         </form>
         <div className="border-l-[1px] flex-col border-l-black pl-14">
           <h1 className="tagline">Don't have an account</h1>
-          <Button onClick={navigateToRegisterPage}>Register account</Button>
+          <Button className="w-full" onClick={navigateToRegisterPage}>
+            Register account
+          </Button>
         </div>
       </div>
     </div>

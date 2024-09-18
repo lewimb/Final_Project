@@ -4,13 +4,13 @@ import (
 	"errors"
 	"time"
 
-	"github/lewimb/fp_backend/model"
 	"github.com/golang-jwt/jwt/v5"
+	"github/lewimb/fp_backend/model"
 )
 
 type JwtTokenClaims struct {
 	jwt.RegisteredClaims
-	UserId uint `json:"userId"`
+	Username string `json:"username"`
 }
 
 type TokenConfig struct {
@@ -21,7 +21,7 @@ type TokenConfig struct {
 
 type JwtToken interface {
 	VerifyToken(tokenString string) (jwt.MapClaims, error)
-  GenerateToken(payload model.User) (string, error)
+	GenerateToken(payload model.User) (string, error)
 }
 
 type jwtToken struct {
@@ -45,14 +45,14 @@ func (j *jwtToken) VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func (j *jwtToken) GenerateToken(payload model.User) ( string, error) {
+func (j *jwtToken) GenerateToken(payload model.User) (string, error) {
 	claims := JwtTokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    j.cfg.IssuerName,
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.cfg.JwtLifeTime)),
 		},
-		UserId: payload.ID,
+		Username: payload.Username,
 	}
 
 	jwtNewClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

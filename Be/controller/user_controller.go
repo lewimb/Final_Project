@@ -26,26 +26,13 @@ type userController struct {
 	jwtService  common.JwtToken
 }
 
-func (uc *userController) setCookie(c *gin.Context, key string, val any) {
-	value := fmt.Sprintf("%v", val)
-
-	c.SetCookie(
-		key,
-		value,
-		60*60*10000,
-		"/",
-		"",
-		false,
-		true,
-	)
-}
-
 func (uc *userController) Login(c *gin.Context) {
 	var login model.User
 
 	err := c.ShouldBindJSON(&login)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	user, err := uc.repo.GetByUsername(login.Username)
@@ -76,16 +63,11 @@ func (uc *userController) Login(c *gin.Context) {
 		return
 	}
 
-	uc.setCookie(
-		c,
-		"access_token",
-		accessToken,
-	)
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Successful Registered",
 		"data": gin.H{
-			"profile": userProfile,
+			"profile":     userProfile,
+			"accessToken": accessToken,
 		},
 	})
 
@@ -97,6 +79,7 @@ func (uc *userController) Register(c *gin.Context) {
 	err := c.ShouldBindJSON(&newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	if newUser.Username == "" || newUser.Password == "" {
@@ -138,30 +121,103 @@ func (uc *userController) Register(c *gin.Context) {
 		return
 	}
 
-	uc.setCookie(
-		c,
-		"access_token",
-		accessToken,
-	)
-
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Successful Registered",
+		"data": gin.H{
+			"profile":     userProfile,
+			"accessToken": accessToken,
+		},
+	})
+}
+
+func (us *userController) GetUserProfile(c *gin.Context) {
+	username := c.Param("username")
+
+	user, err := us.repo.GetByUsername(username)
+
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			statusCode = http.StatusBadRequest
+		}
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	profile, err := us.profileRepo.GetByUserId(user.ID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			statusCode = http.StatusBadRequest
+		}
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Println(gin.H{
+		"profile": profile,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successfully retrieved user profile",
+		"data": gin.H{
+			"profile": profile,
+		},
+	})
+}
+
+func (us *userController) UpdateUserProfile(c *gin.Context) {
+	username := c.Param("username")
+
+	user, err := us.repo.GetByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var userProfile model.UserProfile
+	err = c.ShouldBindJSON(&userProfile)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = us.profileRepo.Update(user.ID, &userProfile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Successfully update user %s's profile", username),
 		"data": gin.H{
 			"profile": userProfile,
 		},
 	})
 }
 
-func (us *userController) GetUserProfile(c *gin.Context) {
-
-}
-
-func (us *userController) UpdateUserProfile(c *gin.Context) {
-
-}
-
 func (us *userController) DeleteUser(c *gin.Context) {
+	username := c.Param("username")
 
+	user, err := us.repo.GetByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = us.repo.Delete(username); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = us.profileRepo.Delete(user.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Successfully deleted user %d", user.ID),
+	})
 }
 
 func NewUserController(ur *repository.UserRepo, pr *repository.UserProfileRepo, jwtService common.JwtToken) *userController {

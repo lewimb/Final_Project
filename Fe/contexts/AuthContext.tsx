@@ -1,55 +1,137 @@
 "use client";
 
 import { createContext, useEffect, useState } from "react";
-import { useCookies } from "next-client-cookies";
 import { jwtDecode } from "jwt-decode";
 
-export type AuthUser = {
+export type UserSession = {
   username: string;
   fullname: string;
-  profPic: string;
+  profilepic: string;
 } | null;
 
+export type AuthPayload = {
+  username: string;
+  password: string;
+};
+
+export type UpdatePayload = {
+  fullname: string;
+  profilepic: string;
+};
+
 export const AuthContext = createContext<{
-  authUser: AuthUser;
-  setAuthUser: (authUser: AuthUser) => void;
+  userSession: UserSession;
+  login: (payload: AuthPayload) => Promise<void>;
+  register: (payload: AuthPayload) => Promise<void>;
+  logout: () => void;
+  deleteAccount: () => Promise<void>;
+  updateAccount: (payload: UpdatePayload) => Promise<void>;
 }>({
-  authUser: null,
-  setAuthUser: () => {},
+  userSession: null,
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
+  deleteAccount: async () => {},
+  updateAccount: async () => {},
 });
 
-export async function fetchUserProfile(id: string) {
-  const res = await fetch(`http;//localhost:8080/${id}/profile`);
+export async function fetchUserProfile(username: string): Promise<UserSession> {
+  const res = await fetch(`http://localhost:8080/users/${username}/profile`);
 
   if (!res.ok) throw new Error("failed to fetch user profile");
 
   const data = await res.json();
-  return data;
+
+  return data.data.profile;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authUser, setAuthUser] = useState<AuthUser>(null);
-  const cookies = useCookies();
+  const [userSession, setUserSession] = useState<UserSession>(null);
 
-  const accessToken = cookies.get("access_token");
+  function handleSubmission(
+    payload: AuthPayload,
+    endpoint: "login" | "register",
+  ): Promise<void> {
+    return fetch("http://localhost:8080/users/" + endpoint, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Login error. Please try again");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        localStorage.setItem("access_token", data.data.accessToken);
+        setUserSession({ username: payload.username, ...data.data.profile });
+      });
+  }
+
+  function login(payload: AuthPayload): Promise<void> {
+    return handleSubmission(payload, "login");
+  }
+
+  function register(payload: AuthPayload): Promise<void> {
+    return handleSubmission(payload, "register");
+  }
+
+  function logout(): void {
+    localStorage.removeItem("access_token");
+    setUserSession(null);
+  }
+
+  function deleteAccount() {
+    return fetch(`http://localhost:8080/users/${userSession?.username}`, {
+      method: "DELETE",
+    }).then(() => {
+      setUserSession(null);
+    });
+  }
+
+  function updateAccount(payload: UpdatePayload) {
+    return fetch(
+      `http://localhost:8080/users/${userSession?.username}/profile`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setUserSession({ ...userSession, ...data.data.profile });
+      });
+  }
 
   useEffect(() => {
-    if (accessToken) {
-      const { userId } = jwtDecode<{ userId: string }>(accessToken);
+    const accessToken = localStorage.getItem("access_token");
 
-      fetchUserProfile(userId)
-        .then((userProfile) => setAuthUser(userProfile))
+    if (accessToken) {
+      const { username } = jwtDecode<{ username: string }>(accessToken);
+
+      fetchUserProfile(username)
+        .then((userProfile) => setUserSession({ ...userProfile!, username }))
         .catch((err) => console.log(err));
     } else {
-      setAuthUser(null);
+      setUserSession(null);
     }
-  }, [cookies]);
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        authUser,
-        setAuthUser,
+        userSession,
+        login,
+        register,
+        logout,
+        deleteAccount,
+        updateAccount,
       }}
     >
       {children}

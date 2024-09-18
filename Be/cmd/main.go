@@ -42,7 +42,7 @@ func main() {
 	uc := controller.NewUserController(ur, pr, jwtService)
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{os.Getenv("FE_BASE_URL")},
+		AllowOrigins:     []string{os.Getenv("FE_BASE_URL"), "http://192.168.69.193:3000", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

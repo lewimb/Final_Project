@@ -30,6 +30,12 @@ func (repo *UserRepo) Create(newUser *model.User) error {
 	return nil
 }
 
+func (repo *UserRepo) Delete(username string) error {
+	if err := repo.db.Where("username = ?", username).Delete(&model.User{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
 func NewUserRepository(db *gorm.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
