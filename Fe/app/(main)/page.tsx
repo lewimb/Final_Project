@@ -1,7 +1,16 @@
-import Card, { Item } from "@/components/card";
+import Card, { type Item } from "@/components/card";
 import Carousel from "@/components/carousel";
+import { getItems } from "./action";
 
 export default async function Home() {
+  let items: Item[] = [];
+
+  try {
+    items = await getItems();
+  } catch (error) {
+    console.log(error);
+  }
+
   return (
     <>
       <Carousel />
@@ -21,24 +30,3 @@ export default async function Home() {
     </>
   );
 }
-
-let items: Item[] = [
-  {
-    id: 1,
-    name: "Item 1",
-    img: "/assets/carousel-placeholder.avif",
-    description: "This is the description for Item 1.",
-  },
-  {
-    id: 2,
-    name: "Item 2",
-    img: "/assets/carousel-placeholder.avif",
-    description: "This is the description for Item 2.",
-  },
-  {
-    id: 3,
-    name: "Item 3",
-    img: "/assets/carousel-placeholder.avif",
-    description: "This is the description for Item 3.",
-  },
-];
