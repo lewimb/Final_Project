@@ -35,7 +35,7 @@ export default async function ProductDetail({ params }: PageProps) {
             <div className="flex flex-col gap-2">
               <p className="p-1">Available sizes</p>
               <SizePicker />
-              <Button />
+              <Button>Submit</Button>
             </div>
           </div>
         </div>
