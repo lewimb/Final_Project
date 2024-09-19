@@ -11,6 +11,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github/lewimb/fp_backend/controller"
+	"github/lewimb/fp_backend/middleware"
 	"github/lewimb/fp_backend/model"
 	"github/lewimb/fp_backend/repository"
 	"github/lewimb/fp_backend/utils/common"
@@ -44,6 +45,8 @@ func main() {
 	ic := controller.NewItemController(ir)
 	uc := controller.NewUserController(ur, pr, jwtService)
 
+	authMiddleware := middleware.AuthMiddleware(jwtService, ur)
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{os.Getenv("FE_BASE_URL"), "http://192.168.69.193:3000", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -53,7 +56,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	registerRoutes(r, uc, ic)
+	registerRoutes(r, uc, ic, authMiddleware)
 
 	r.Run(":8080")
 }

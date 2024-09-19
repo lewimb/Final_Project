@@ -36,7 +36,14 @@ export const AuthContext = createContext<{
 });
 
 export async function fetchUserProfile(username: string): Promise<UserSession> {
-  const res = await fetch(`http://localhost:8080/users/${username}/profile`);
+  const accessToken = localStorage.getItem("access_token");
+  if (!accessToken) throw new Error("User is not logged in");
+
+  const res = await fetch(`http://localhost:8080/users/${username}/profile`, {
+    headers: {
+      Authorization: accessToken,
+    },
+  });
 
   if (!res.ok) throw new Error("failed to fetch user profile");
 
@@ -85,14 +92,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   function deleteAccount() {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) throw new Error("User is not logged in");
+
     return fetch(`http://localhost:8080/users/${userSession?.username}`, {
       method: "DELETE",
+      headers: {
+        Authorization: accessToken,
+      },
     }).then(() => {
       setUserSession(null);
     });
   }
 
   function updateAccount(payload: UpdatePayload) {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) throw new Error("User is not logged in");
+
     return fetch(
       `http://localhost:8080/users/${userSession?.username}/profile`,
       {
@@ -100,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(payload),
         headers: {
           "Content-Type": "application/json",
+          Authorization: accessToken,
         },
       },
     )

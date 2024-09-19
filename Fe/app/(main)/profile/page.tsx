@@ -35,6 +35,7 @@ export default function ProfilePage() {
     try {
       validateFullname();
       await updateAccount(input);
+      setError("");
     } catch (err) {
       if (err instanceof Error) setError(err.message);
     }

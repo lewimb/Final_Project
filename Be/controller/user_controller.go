@@ -53,8 +53,10 @@ func (uc *userController) Login(c *gin.Context) {
 		return
 	}
 
-	userProfile := model.UserProfile{
-		UserID: user.ID,
+	userProfile, err := uc.profileRepo.GetByUserId(user.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	accessToken, err := uc.jwtService.GenerateToken(*user)

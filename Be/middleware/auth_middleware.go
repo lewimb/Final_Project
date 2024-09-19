@@ -1,27 +1,46 @@
 package middleware
 
 import (
+	"github/lewimb/fp_backend/repository"
 	"github/lewimb/fp_backend/utils/common"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func JWTMiddleware(jwtService common.JwtToken) gin.HandlerFunc {
+func AuthMiddleware(jwtService common.JwtToken, ur *repository.UserRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
+		accessToken := c.GetHeader("Authorization")
+
+		if accessToken == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
 			c.Abort()
 			return
 		}
-		userId, err := jwtService.VerifyToken(tokenString)
+
+		claims, err := jwtService.VerifyToken(accessToken)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-			c.Abort() // Stop further handlers from being executed
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
 			return
 		}
-		c.Set("userID", userId)
+
+		var username string
+
+		for key, value := range claims {
+			if key == "username" {
+				username = value.(string)
+			}
+		}
+
+		user, err := ur.GetByUsername(username)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+
+		c.Set("user", user)
 		c.Next()
 	}
 }

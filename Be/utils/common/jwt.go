@@ -4,8 +4,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github/lewimb/fp_backend/model"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type JwtTokenClaims struct {
