@@ -28,7 +28,7 @@ func (ic *itemController) GetItems(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Succesfully retrieved items",
 		"data": gin.H{
-			"item": items,
+			"items": items,
 		}})
 
 }

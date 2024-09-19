@@ -1,6 +1,7 @@
 import Card, { type Item } from "@/components/card";
 import Carousel from "@/components/carousel";
 import { getItems } from "./action";
+import Link from "next/link";
 
 export default async function Home() {
   let items: Item[] = [];
@@ -22,7 +23,9 @@ export default async function Home() {
         <div>
           <div className="grid grid-cols-3 gap-11 p-10 justify-between ">
             {items.map((item) => (
-              <Card key={item.id} item={item} />
+              <Link key={item.ID} href={"/products/" + item.ID}>
+                <Card item={item} />
+              </Link>
             ))}
           </div>
         </div>

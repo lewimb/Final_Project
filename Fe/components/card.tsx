@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 export type Item = {
-  id: number;
+  ID: number;
   name: string;
   price: number;
   imgurl: string;
